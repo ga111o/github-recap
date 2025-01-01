@@ -32,10 +32,10 @@ def save_repo_and_commits(
         
         # 레포지토리 저장
         repo_query = text("""
-            INSERT INTO repositories (github_username, repo_name, last_updated)
-            VALUES (:username, :repo_name, :last_updated)
+            INSERT INTO repositories (github_username, repo_name, last_updated, is_secret)
+            VALUES (:username, :repo_name, :last_updated, :is_secret)
             ON CONFLICT (github_username, repo_name) 
-            DO UPDATE SET last_updated = :last_updated
+            DO UPDATE SET last_updated = :last_updated, is_secret = :is_secret
             RETURNING repo_id
         """)
         
@@ -44,7 +44,8 @@ def save_repo_and_commits(
             {
                 "username": github_username,
                 "repo_name": repo_data['name'],
-                "last_updated": repo_data['updated_at']
+                "last_updated": repo_data['updated_at'],
+                "is_secret": repo_data['private']
             }
         )
         repo_id = result.scalar()

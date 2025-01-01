@@ -3,29 +3,25 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-# 데이터베이스 URL 설정 (비밀번호 변경)
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:rootroot@localhost:5432/github_recap")
 
-# 엔진 생성
 engine = create_engine(DATABASE_URL)
-
-# 세션 생성
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base 클래스 생성
 Base = declarative_base()
 
 def init_db():
     try:
         # 데이터베이스 연결 확인
         with engine.connect() as conn:
-            # 테이블 생성
+            # 없을 경우 테이블 생성
             conn.execute(text("""
                 CREATE TABLE IF NOT EXISTS repositories (
                     repo_id SERIAL PRIMARY KEY,
                     github_username VARCHAR(255) NOT NULL,
                     repo_name VARCHAR(255) NOT NULL,
                     last_updated TIMESTAMP WITH TIME ZONE,
+                    is_secret BOOLEAN DEFAULT FALSE,  
                     UNIQUE(github_username, repo_name)
                 );
 
