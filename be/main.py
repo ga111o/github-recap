@@ -1,9 +1,19 @@
+from pathlib import Path
+import sys
+
+root_dir = Path(__file__).parent.parent
+sys.path.append(str(root_dir))
+
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timedelta
 from .database import init_db
 from typing import Optional
 from fastapi import Header, HTTPException
+
+from be.modules import get_user_repos, get_user_commits, save_repo_and_commits, check_repo_update_needed
+from be.modules import validate_date_n_token
+from be.modules import get_total_commit_num, get_specific_repo_commit_num
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,23 +34,21 @@ async def get_commits(
     user: str,
     github_token: Optional[str] = Header(None, alias="X-GitHub-Token")
 ):
-    if year is None or month is None or user is None:
-        raise HTTPException(status_code=400, detail="Year, month and GitHub ID must be provided")
-    
-    current_year = datetime.now().year
-    if year < 2005 or year > current_year or month < 1 or month > 12:
-        raise HTTPException(status_code=400, detail="Invalid year or month")
+@app.get("/get/{user}/commit_num/total")
+async def get_commit_num(
+    user: str,
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    github_token: Optional[str] = Header(None, alias="X-GitHub-Token")
+):
+    return get_total_commit_num(github_token, user, year, month)
 
-    if github_token is not None:
-        print("get token!")
-        pass
-  
-    return {
-        "code": 200,
-        "message": "success",
-        "year": year,
-        "month": month,
-        "user": user,
-        "token_provided": github_token is not None
-    }
-
+@app.get("/get/{user}/commit_num/specific")
+async def get_commit_num(
+    user: str,
+    repo_name: str,
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    github_token: Optional[str] = Header(None, alias="X-GitHub-Token")
+):
+    return get_specific_repo_commit_num(github_token, user, repo_name, year, month)
