@@ -1,9 +1,17 @@
+import sys
+from pathlib import Path
+
+root_dir = Path(__file__).parent.parent.parent
+sys.path.append(str(root_dir))
+
 import requests
 from datetime import datetime
 from typing import List, Dict, Union
 import os
 import dotenv
 from icecream import ic
+from be.contents import LANGUAGE_EXTENSIONS
+
 
 dotenv.load_dotenv()
 
@@ -66,7 +74,8 @@ def get_user_commits(token: str, user: str, repo_name: str, start_date: datetime
                 break
         else:
             return (response.status_code, response.text)
-    
+
+
     detailed_commits = []
     for commit in all_commits:
         commit_url = f"https://api.github.com/repos/{user}/{repo_name}/commits/{commit['sha']}"
