@@ -77,7 +77,7 @@ def save_repo_and_commits(
             
             for file_change in commit['files_changed']:
                 filename = file_change['filename']
-                file_extension = ''
+                file_extension = 'none'
                 if '.' in filename:
                     possible_extension = filename.split('.')[-1]
                     if len(possible_extension) <= 45: 
@@ -104,7 +104,7 @@ def save_repo_and_commits(
                         "additions": file_change['additions'],
                         "deletions": file_change['deletions'],
                         "changes": file_change['changes'],
-                        "language": file_extension or ""
+                        "language": file_extension or "none"
                     }
                 )
         
