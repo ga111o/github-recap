@@ -35,7 +35,7 @@ async def get_repo_n_commits_then_save_to_db(
     github_token: Optional[str] = Header(None, alias="X-GitHub-Token")
 ):
     
-    start_date, end_date = validate_date_n_token(year, month, github_token)
+    start_date, end_date = validate_date_n_token(github_username, year, month, github_token)
 
     # 레포 정보 가져오기
     repos = get_user_repos(github_token, start_date, end_date)

@@ -3,12 +3,15 @@ from fastapi import HTTPException
 from typing import Optional
 import requests
 
-def validate_date_n_token(year: Optional[int], month: Optional[int], token: Optional[str]) -> bool:
+def validate_date_n_token(github_username: Optional[str], year: Optional[int], month: Optional[int], token: Optional[str]) -> bool:
     """
     date와 token을 정상적으로 받았는지 확인하고, 이상하다고 하면 함수 내에서 raise HTTPException을 해줘요.
 
     정상적인 값이면 start_date, end_date로 만들어서 각각 반환해요.
     """
+
+    if github_username is None:
+        raise HTTPException(status_code=422, detail="Github username is required")
 
     if token is None:
         raise HTTPException(status_code=422, detail="GitHub token must be provided")
@@ -29,7 +32,12 @@ def validate_date_n_token(year: Optional[int], month: Optional[int], token: Opti
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
-        return start_date, end_date
+        user_info = response.json()
+        if user_info['login'] != github_username:
+            raise HTTPException(status_code=422, detail="Github username is invalid")
+        else:
+            return start_date, end_date
+        
     elif response.status_code == 401:
         raise HTTPException(status_code=422, detail="GitHub token is invalid or expired")
     else:
