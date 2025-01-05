@@ -1,0 +1,131 @@
+# 확장자 매핑    
+LANGUAGE_EXTENSIONS = {
+    # 주요 프로그래밍 언어
+    '.py': 'Python',
+    '.java': 'Java',
+    '.cpp': 'C++',
+    '.c': 'C',
+    '.cs': 'C#',
+    '.go': 'Go',
+    '.rs': 'Rust',
+    '.swift': 'Swift',
+    '.kt': 'Kotlin',
+    '.rb': 'Ruby',
+    '.php': 'PHP',
+    '.r': 'R',
+    '.m': 'MATLAB/Objective-C',
+    '.jl': 'Julia',
+    '.dart': 'Dart',
+    '.hs': 'Haskell',
+    '.scala': 'Scala',
+    '.clj': 'Clojure',
+    '.ex': 'Elixir',
+    '.erl': 'Erlang',
+    '.nim': 'Nim',
+    '.v': 'Vlang',
+    '.ml': 'OCaml/Standard ML',
+    '.fs': 'F#',
+    '.pro': 'Prolog',
+    '.lisp': 'Lisp',
+    '.scm': 'Scheme',
+    '.ada': 'Ada',
+    '.d': 'D',
+    '.cr': 'Crystal',
+
+    # 웹 개발 언어 및 프레임워크
+    '.js': 'JavaScript',
+    '.jsx': 'React',
+    '.ts': 'TypeScript',
+    '.tsx': 'TypeScript React',
+    '.vue': 'Vue',
+    '.html': 'HTML',
+    '.htm': 'HTML',
+    '.css': 'CSS',
+    '.scss': 'SCSS',
+    '.sass': 'Sass',
+    '.less': 'Less',
+    '.php': 'PHP',
+    '.asp': 'ASP',
+    '.aspx': 'ASP.NET',
+    '.jsp': 'Java Server Pages',
+    '.cfm': 'ColdFusion',
+
+    # 스크립트 언어
+    '.sh': 'Shell',
+    '.bash': 'Bash',
+    '.ps1': 'PowerShell',
+    '.pl': 'Perl',
+    '.lua': 'Lua',
+    '.tcl': 'Tcl',
+    '.raku': 'Raku',
+    '.bat': 'Batch',
+    '.cmd': 'Command Script',
+
+    # 데이터베이스
+    '.sql': 'SQL',
+    '.pgsql': 'PostgreSQL',
+    '.mysql': 'MySQL',
+    '.db': 'SQLite',
+
+    # 마크업/데이터 포맷
+    '.md': 'Markdown',
+    '.mdx': 'MDX',
+    '.json': 'JSON',
+    '.yml': 'YAML',
+    '.yaml': 'YAML',
+    '.xml': 'XML',
+    '.csv': 'CSV',
+    '.txt': 'Text',
+    '.toml': 'TOML',
+    '.ini': 'INI',
+    '.rss': 'RSS',
+
+    # 시스템 프로그래밍
+    '.asm': 'Assembly',
+    '.s': 'Assembly',
+    '.f90': 'Fortran',
+    '.f95': 'Fortran',
+    '.vhdl': 'VHDL',
+    '.verilog': 'Verilog',
+
+    # 문서 및 출판
+    '.tex': 'LaTeX',
+    '.bib': 'BibTeX',
+
+    # 설정 파일
+    '.gitignore': 'Git Ignore',
+    '.dockerignore': 'Docker Ignore',
+    'Dockerfile': 'Dockerfile',
+    'Makefile': 'Makefile',
+    '.env': 'Environment Variables',
+
+    # 기타
+    '.log': 'Log File',
+    '.svg': 'Scalable Vector Graphics',
+    '.eot': 'Embedded OpenType Font',
+    '.ttf': 'TrueType Font',
+    '.woff': 'Web Open Font Format',
+    '.woff2': 'Web Open Font Format 2',
+
+    # 이미지
+    '.png': 'PNG',
+    '.jpg': 'JPEG',
+    '.jpeg': 'JPEG',
+    '.gif': 'GIF',
+    '.bmp': 'BMP',
+    '.tiff': 'TIFF',
+    '.ico': 'Icon', 
+    '.svg': 'SVG',
+    '.webp': 'WebP',
+    '.ico': 'Icon',
+    
+    # 문서
+    '.pdf': 'PDF',
+    '.doc': 'Word',
+    '.docx': 'Word',
+    '.ppt': 'PowerPoint',
+    '.pptx': 'PowerPoint',
+    '.xls': 'Excel',
+    '.xlsx': 'Excel',
+}
+

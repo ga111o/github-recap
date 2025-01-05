@@ -31,6 +31,7 @@ def init_db():
                     commit_hash VARCHAR(40) NOT NULL,
                     commit_message TEXT,
                     commit_date TIMESTAMP WITH TIME ZONE NOT NULL,
+                    author VARCHAR(255),
                     UNIQUE(repo_id, commit_hash)
                 );
 
@@ -39,7 +40,11 @@ def init_db():
                     commit_id INTEGER REFERENCES commits(commit_id),
                     file_path TEXT NOT NULL,
                     change_type VARCHAR(10) NOT NULL,
-                    content TEXT
+                    content TEXT,
+                    additions INTEGER,
+                    deletions INTEGER,
+                    changes INTEGER,
+                    language VARCHAR(50)
                 );
             """))
             conn.commit()

@@ -54,10 +54,12 @@ def save_repo_and_commits(
         for commit in commits_data:
             # 커밋 기본 정보 저장
             commit_query = text("""
-                INSERT INTO commits (repo_id, commit_hash, commit_message, commit_date)
-                VALUES (:repo_id, :commit_hash, :commit_message, :commit_date)
+                INSERT INTO commits (repo_id, commit_hash, commit_message, commit_date, author)
+                VALUES (:repo_id, :commit_hash, :commit_message, :commit_date, :author)
                 ON CONFLICT (repo_id, commit_hash)
-                DO UPDATE SET commit_message = :commit_message
+                DO UPDATE SET 
+                    commit_message = :commit_message,
+                    author = :author
                 RETURNING commit_id
             """)
             
@@ -67,7 +69,8 @@ def save_repo_and_commits(
                     "repo_id": repo_id,
                     "commit_hash": commit['sha'],
                     "commit_message": commit['commit_message'],
-                    "commit_date": commit['date']
+                    "commit_date": commit['date'],
+                    "author": commit['author']
                 }
             )
             commit_id = result.scalar()
@@ -75,8 +78,14 @@ def save_repo_and_commits(
             # 파일 변경 정보 저장
             for file_change in commit['files_changed']:
                 change_query = text("""
-                    INSERT INTO code_changes (commit_id, file_path, change_type, content)
-                    VALUES (:commit_id, :file_path, :change_type, :content)
+                    INSERT INTO code_changes (
+                        commit_id, file_path, change_type, content,
+                        additions, deletions, changes, language
+                    )
+                    VALUES (
+                        :commit_id, :file_path, :change_type, :content,
+                        :additions, :deletions, :changes, :language
+                    )
                 """)
                 
                 db.execute(
@@ -85,7 +94,11 @@ def save_repo_and_commits(
                         "commit_id": commit_id,
                         "file_path": file_change['filename'],
                         "change_type": file_change['status'],
-                        "content": file_change.get('patch', '')
+                        "content": file_change.get('patch', ''),
+                        "additions": file_change['additions'],
+                        "deletions": file_change['deletions'],
+                        "changes": file_change['changes'],
+                        "language": file_change['language']
                     }
                 )
         

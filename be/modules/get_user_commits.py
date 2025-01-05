@@ -85,7 +85,8 @@ def get_user_commits(token: str, user: str, repo_name: str, start_date: datetime
                         'additions': file['additions'],
                         'deletions': file['deletions'],
                         'changes': file['changes'],
-                        'patch': file.get('patch', '')
+                        'patch': file.get('patch', ''),
+                        'language': LANGUAGE_EXTENSIONS.get(os.path.splitext(file['filename'])[1].lower(), 'Unknown')
                     } for file in commit_data['files']
                 ]
             })
@@ -97,9 +98,9 @@ def get_user_commits(token: str, user: str, repo_name: str, start_date: datetime
 if __name__ == "__main__":
     token: str = os.getenv("GITHUB_TOKEN")
     user: str = os.getenv("GITHUB_USER")
-    repo_name: str = "ga111o/hci-korea-2025-usability-test"
-    start_date: datetime = datetime(2024, 1, 1)  
-    end_date: datetime = datetime(2024, 12, 31)  
+    repo_name: str = os.getenv("GITHUB_TEST_REPO")
+    start_date: datetime = datetime(2025, 1, 1)  
+    end_date: datetime = datetime(2025, 1, 31)  
     commits: Union[List[Dict], tuple] = get_user_commits(token, user, repo_name, start_date, end_date)
 
     ic(commits)
