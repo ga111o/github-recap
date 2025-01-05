@@ -24,6 +24,29 @@ def init_db():
                     is_secret BOOLEAN DEFAULT FALSE,  
                     UNIQUE(github_username, repo_name)
                 );
+                
+                CREATE TABLE IF NOT EXISTS repo_recaps (
+                    repo_recap_id SERIAL PRIMARY KEY,
+                    github_username VARCHAR(255) NOT NULL,
+                    repo_id INTEGER REFERENCES repositories(repo_id),
+                    year INTEGER NOT NULL,
+                    month INTEGER NOT NULL,
+                    content TEXT NOT NULL,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(github_username, repo_id, year, month)
+                );
+                              
+                CREATE TABLE IF NOT EXISTS total_recaps(
+                    total_recap_id SERIAL PRIMARY KEY,
+                    github_username VARCHAR(255) NOT NULL,
+                    year INTEGER NOT NULL,
+                    month INTEGER NOT NULL,
+                    content TEXT NOT NULL,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(github_username, year, month)
+                );
 
                 CREATE TABLE IF NOT EXISTS commits (
                     commit_id SERIAL PRIMARY KEY,
