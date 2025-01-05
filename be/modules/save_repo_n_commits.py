@@ -111,10 +111,13 @@ def save_repo_and_commits(
     finally:
         db.close()
 
-def check_repo_update_needed(db: Session, github_username: str, repo_name: str, updated_at: str) -> bool:
+def check_repo_update_needed(github_username: str, repo_name: str, updated_at: str, db: Session = SessionLocal()) -> bool:
     """
     db 날짜 기준으로 레포지토리의 업데이트 필요 여부를 확인
-    
+
+    db에 없으면 True
+    가져온 것과 비교했을 때, db 값이 작으면 True
+
     return:
         True: 업데이트 필요
         False: 업데이트 불필요
@@ -131,8 +134,10 @@ def check_repo_update_needed(db: Session, github_username: str, repo_name: str, 
     if not db_updated_at:
         return True
     
-    # Convert GitHub timestamp to timezone-aware datetime
+    # GitHub 타임스탬프를 표준 시간대 인식 날짜로 변환
     github_updated_at = datetime.strptime(updated_at, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+
+    # 가져온 것이 db 값보다 크면 True
     return github_updated_at > db_updated_at
 
 if __name__ == "__main__":
@@ -145,18 +150,17 @@ if __name__ == "__main__":
     
     token = os.getenv("GITHUB_TOKEN")
     github_username = os.getenv("GITHUB_USER")
-    start_date = datetime(2024, 1, 1)
-    end_date = datetime(2024, 12, 31)
+    start_date = datetime(2023, 1, 1)
+    end_date = datetime(2025, 1, 31)
     
     # 레포 정보 가져오기
     repos = get_user_repos(token, start_date, end_date)
     
     if isinstance(repos, list):
-        db = SessionLocal()
         try:
             for repo in repos:
                 # 레포 업데이트 필요 여부 확인
-                if check_repo_update_needed(db, github_username, repo['name'], repo['updated_at']):
+                if check_repo_update_needed(github_username, repo['name'], repo['updated_at']):
                     # 각 레포 커밋 정보 가져오기
                     commits = get_user_commits(token, github_username, repo['name'], start_date, end_date)
                     
@@ -169,6 +173,6 @@ if __name__ == "__main__":
                 else:
                     print(f"Repository {repo['name']} is up to date, skipping...")
         finally:
-            db.close()
+            print("done!")
     else:
         print(f"Error getting repositories: {repos}")
