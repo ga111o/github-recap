@@ -1,9 +1,3 @@
-from pathlib import Path
-import sys
-
-root_dir = Path(__file__).parent
-sys.path.append(str(root_dir))
-
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
@@ -18,7 +12,8 @@ from .modules import (
     check_repo_update_needed,
     validate_date_n_token,
     get_total_commit_num, 
-    get_specific_repo_commit_num
+    get_specific_repo_commit_num,
+    get_active_days
 )
 
 @asynccontextmanager
@@ -143,3 +138,14 @@ async def get_used_language(
     start_date, end_date = validate_date_n_token(user, year, month, github_token)
 
     return get_used_language(user, start_date, end_date)
+
+@app.get("/get/{user}/days/active")
+async def get_active_days(
+    user: str,
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    github_token: Optional[str] = Header(None, alias="X-GitHub-Token")
+):
+    active_days, total_days = get_active_days(user, github_token, year, month)
+    return {"active_days": active_days, "total_days": total_days}
+
