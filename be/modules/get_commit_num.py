@@ -1,13 +1,7 @@
-from pathlib import Path
-import sys
-
-root_dir = Path(__file__).parent.parent.parent
-sys.path.append(str(root_dir))
-
 from datetime import datetime
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from be import SessionLocal
+from .. import SessionLocal
 from . import validate_date_n_token
 from typing import Optional 
 

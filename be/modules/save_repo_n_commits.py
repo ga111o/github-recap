@@ -1,11 +1,5 @@
-import sys
-from pathlib import Path
 from datetime import datetime, timezone
-
-root_dir = Path(__file__).parent.parent.parent
-sys.path.append(str(root_dir))
-
-from be import SessionLocal
+from .. import SessionLocal
 from typing import List, Dict, Union
 from sqlalchemy.orm import Session
 from sqlalchemy import text

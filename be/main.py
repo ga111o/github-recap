@@ -1,19 +1,25 @@
 from pathlib import Path
 import sys
 
-root_dir = Path(__file__).parent.parent
+root_dir = Path(__file__).parent
 sys.path.append(str(root_dir))
 
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
-from .database import init_db
+from . import init_db
 from typing import Optional
 from fastapi import Header, HTTPException
 
-from be.modules import get_user_repos, get_user_commits, save_repo_and_commits, check_repo_update_needed
-from be.modules import validate_date_n_token
-from be.modules import get_total_commit_num, get_specific_repo_commit_num
+from .modules import (
+    get_user_repos, 
+    get_user_commits, 
+    save_repo_and_commits, 
+    check_repo_update_needed,
+    validate_date_n_token,
+    get_total_commit_num, 
+    get_specific_repo_commit_num
+)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

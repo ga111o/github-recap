@@ -1,16 +1,10 @@
-import sys
-from pathlib import Path
-
-root_dir = Path(__file__).parent.parent.parent
-sys.path.append(str(root_dir))
-
 import requests
 from datetime import datetime
 from typing import List, Dict, Union
 import os
 import dotenv
 from icecream import ic
-from be.contents import LANGUAGE_EXTENSIONS
+from ..contents import LANGUAGE_EXTENSIONS
 
 
 dotenv.load_dotenv()
