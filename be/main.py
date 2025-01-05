@@ -132,3 +132,14 @@ async def get_commit_num(
     github_token: Optional[str] = Header(None, alias="X-GitHub-Token")
 ):
     return get_specific_repo_commit_num(github_token, user, repo_name, year, month)
+
+@app.get("/get/{user}/used_language")
+async def get_used_language(
+    user: str,
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    github_token: Optional[str] = Header(None, alias="X-GitHub-Token")
+):
+    start_date, end_date = validate_date_n_token(user, year, month, github_token)
+
+    return get_used_language(user, start_date, end_date)
