@@ -27,11 +27,51 @@ async def read_root():
     return {"message": "working!"}
 
 
-@app.get("/commits")
-async def get_commits(
-    year: int,
-    month: int,
-    user: str,
+@app.get("/save/{github_username}/all")
+async def get_repo_n_commits_then_save_to_db(
+    github_username: str,
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    github_token: Optional[str] = Header(None, alias="X-GitHub-Token")
+):
+    
+    start_date, end_date = validate_date_n_token(year, month, github_token)
+
+    # 레포 정보 가져오기
+    repos = get_user_repos(github_token, start_date, end_date)
+    
+    if isinstance(repos, list):
+        try:
+            for repo in repos:
+                # 레포 업데이트 필요 여부 확인
+                if check_repo_update_needed(github_username, repo['name'], repo['updated_at']):
+                    # 각 레포 커밋 정보 가져오기
+                    commits = get_user_commits(github_token, github_username, repo['name'], start_date, end_date)
+                    
+                    if isinstance(commits, list):
+                        # 데이터베이스에 저장
+                        result = save_repo_and_commits(github_username, repo, commits)
+                        print(f"Repository {repo['name']} updated: {result}")
+                    else:
+                        print(f"Error getting commits for {repo['name']}: {commits}")
+                else:
+                    print(f"Repository {repo['name']} is up to date, skipping...")
+        finally:
+            return {"success": True, "message": "done!"}
+    else:
+        return {"success": False, "message": "Error getting repositories"}
+
+
+@app.get("/get/repo")
+async def get_repository(
+    year: Optional[int] = None, 
+    month: Optional[int] = None,
+    github_token: Optional[str] = Header(None, alias="X-GitHub-Token")
+):
+    start_date, end_date = validate_date_n_token(year, month, github_token)
+
+    # 해당 기간의 레포들 가져와서 바로 반환
+    return get_user_repos(github_token, start_date, end_date)
     github_token: Optional[str] = Header(None, alias="X-GitHub-Token")
 ):
 @app.get("/get/{user}/commit_num/total")
