@@ -4,7 +4,6 @@ from typing import List, Dict, Union
 import os
 import dotenv
 from icecream import ic
-from ..contents import LANGUAGE_EXTENSIONS
 
 
 dotenv.load_dotenv()
@@ -89,7 +88,7 @@ def get_user_commits(token: str, user: str, repo_name: str, start_date: datetime
                         'deletions': file['deletions'],
                         'changes': file['changes'],
                         'patch': file.get('patch', ''),
-                        'language': LANGUAGE_EXTENSIONS.get(os.path.splitext(file['filename'])[1].lower(), 'Unknown')
+                        'language': os.path.splitext(file['filename'])[1].lower() or 'none'
                     } for file in commit_data['files']
                 ]
             })

@@ -1,5 +1,11 @@
 from datetime import datetime, timezone
-from .. import SessionLocal
+try:
+    from .. import SessionLocal
+except ImportError:
+    import sys
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+    from be import SessionLocal
 from typing import List, Dict, Union
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -69,8 +75,14 @@ def save_repo_and_commits(
             )
             commit_id = result.scalar()
             
-            # 파일 변경 정보 저장
             for file_change in commit['files_changed']:
+                filename = file_change['filename']
+                file_extension = ''
+                if '.' in filename:
+                    possible_extension = filename.split('.')[-1]
+                    if len(possible_extension) <= 45: 
+                        file_extension = possible_extension
+
                 change_query = text("""
                     INSERT INTO code_changes (
                         commit_id, file_path, change_type, content,
@@ -92,7 +104,7 @@ def save_repo_and_commits(
                         "additions": file_change['additions'],
                         "deletions": file_change['deletions'],
                         "changes": file_change['changes'],
-                        "language": file_change['language']
+                        "language": file_extension or ""
                     }
                 )
         
@@ -101,7 +113,7 @@ def save_repo_and_commits(
         
     except Exception as e:
         db.rollback()
-        return str(e)
+        return "error: " + str(e)
     finally:
         db.close()
 
@@ -116,23 +128,23 @@ def check_repo_update_needed(github_username: str, repo_name: str, updated_at: s
         True: 업데이트 필요
         False: 업데이트 불필요
     """
-    query = text("""
-        SELECT last_updated 
-        FROM repositories 
-        WHERE github_username = :username AND repo_name = :repo_name
-    """)
-    
-    result = db.execute(query, {"username": github_username, "repo_name": repo_name})
-    db_updated_at = result.scalar()
-    
-    if not db_updated_at:
-        return True
-    
-    # GitHub 타임스탬프를 표준 시간대 인식 날짜로 변환
-    github_updated_at = datetime.strptime(updated_at, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
-
-    # 가져온 것이 db 값보다 크면 True
-    return github_updated_at > db_updated_at
+    try:
+        query = text("""
+            SELECT last_updated 
+            FROM repositories 
+            WHERE github_username = :username AND repo_name = :repo_name
+        """)
+        
+        result = db.execute(query, {"username": github_username, "repo_name": repo_name})
+        db_updated_at = result.scalar()
+        
+        if not db_updated_at:
+            return True
+        
+        github_updated_at = datetime.strptime(updated_at, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+        return github_updated_at > db_updated_at
+    finally:
+        db.close()
 
 if __name__ == "__main__":
     from get_user_repos import get_user_repos
@@ -152,14 +164,13 @@ if __name__ == "__main__":
     
     if isinstance(repos, list):
         try:
+            db = SessionLocal() 
             for repo in repos:
-                # 레포 업데이트 필요 여부 확인
-                if check_repo_update_needed(github_username, repo['name'], repo['updated_at']):
-                    # 각 레포 커밋 정보 가져오기
+                # check_repo_update_needed에 세션 전달
+                if check_repo_update_needed(github_username, repo['name'], repo['updated_at'], db):
                     commits = get_user_commits(token, github_username, repo['name'], start_date, end_date)
                     
                     if isinstance(commits, list):
-                        # 데이터베이스에 저장
                         result = save_repo_and_commits(github_username, repo, commits)
                         print(f"Repository {repo['name']} updated: {result}")
                     else:
@@ -167,6 +178,5 @@ if __name__ == "__main__":
                 else:
                     print(f"Repository {repo['name']} is up to date, skipping...")
         finally:
+            db.close()  
             print("done!")
-    else:
-        print(f"Error getting repositories: {repos}")
