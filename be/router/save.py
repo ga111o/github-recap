@@ -9,9 +9,9 @@ from ..modules import (
     get_latest_commit_sha
 )
 
-router = APIRouter()
+router = APIRouter(prefix="/save")
 
-@router.post("/save/{github_username}/specific/{year}/{month}")
+@router.post("/{github_username}/specific/{year}/{month}")
 async def save_specific_repo_n_commits_to_db(
     github_username: str,
     year: int,
