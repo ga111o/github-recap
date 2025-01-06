@@ -153,8 +153,8 @@ def check_repo_update_needed(github_username: str, repo_url: str, updated_at: Un
         db.close()
 
 if __name__ == "__main__":
-    from get_user_repos import get_user_repos
-    from be.modules.get_user_commit import get_user_commits
+    from be.modules.fetch_user_repos import get_user_repos
+    from be.modules.fetch_user_commit import get_user_commits
     import os
     import dotenv
     
