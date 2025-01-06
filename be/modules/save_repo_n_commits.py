@@ -32,9 +32,9 @@ def save_repo_and_commits(
         
         # 레포지토리 저장
         repo_query = text("""
-            INSERT INTO repositories (github_username, repo_name, last_updated, is_secret)
-            VALUES (:username, :repo_name, :last_updated, :is_secret)
-            ON CONFLICT (github_username, repo_name) 
+            INSERT INTO repositories (github_username, repo_name, repo_url, last_updated, is_secret)
+            VALUES (:username, :repo_name, :repo_url, :last_updated, :is_secret)
+            ON CONFLICT (github_username, repo_url) 
             DO UPDATE SET last_updated = :last_updated, is_secret = :is_secret
             RETURNING repo_id
         """)
@@ -44,6 +44,7 @@ def save_repo_and_commits(
             {
                 "username": github_username,
                 "repo_name": repo_data['name'],
+                "repo_url": repo_data['html_url'],
                 "last_updated": repo_data['updated_at'],
                 "is_secret": repo_data['private']
             }
@@ -117,9 +118,10 @@ def save_repo_and_commits(
     finally:
         db.close()
 
-def check_repo_update_needed(github_username: str, repo_name: str, updated_at: str, db: Session = SessionLocal()) -> bool:
+def check_repo_update_needed(github_username: str, repo_url: str, updated_at: Union[str, datetime], db: Session = SessionLocal()) -> bool:
     """
-    db 날짜 기준으로 레포지토리의 업데이트 필요 여부를 확인
+    db 날짜 기준으로 레포의 업데이트 필요 여부를 확인
+    username - repo_url 기준
 
     db에 없으면 True
     가져온 것과 비교했을 때, db 값이 작으면 True
@@ -132,16 +134,20 @@ def check_repo_update_needed(github_username: str, repo_name: str, updated_at: s
         query = text("""
             SELECT last_updated 
             FROM repositories 
-            WHERE github_username = :username AND repo_name = :repo_name
+            WHERE github_username = :username AND repo_url = :repo_url
         """)
         
-        result = db.execute(query, {"username": github_username, "repo_name": repo_name})
+        result = db.execute(query, {"username": github_username, "repo_url": repo_url})
         db_updated_at = result.scalar()
         
         if not db_updated_at:
             return True
         
-        github_updated_at = datetime.strptime(updated_at, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+        if isinstance(updated_at, str):
+            github_updated_at = datetime.strptime(updated_at, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+        else:
+            github_updated_at = updated_at.replace(tzinfo=timezone.utc) if updated_at.tzinfo is None else updated_at
+            
         return github_updated_at > db_updated_at
     finally:
         db.close()
@@ -172,11 +178,11 @@ if __name__ == "__main__":
                     
                     if isinstance(commits, list):
                         result = save_repo_and_commits(github_username, repo, commits)
-                        print(f"Repository {repo['name']} updated: {result}")
+                        print(f"{result}\t| Repository {repo['name']} updated")
                     else:
-                        print(f"Error getting commits for {repo['name']}: {commits}")
+                        print(f"err     | Error getting commits for {repo['name']}: {commits}")
                 else:
-                    print(f"Repository {repo['name']} is up to date, skipping...")
+                    print(f"skip    | Repository {repo['name']} is up to date")
         finally:
             db.close()  
             print("done!")

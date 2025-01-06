@@ -20,9 +20,10 @@ def init_db():
                     repo_id SERIAL PRIMARY KEY,
                     github_username VARCHAR(255) NOT NULL,
                     repo_name VARCHAR(255) NOT NULL,
+                    repo_url VARCHAR(255) NOT NULL,
                     last_updated TIMESTAMP WITH TIME ZONE,
                     is_secret BOOLEAN DEFAULT FALSE,  
-                    UNIQUE(github_username, repo_name)
+                    UNIQUE(github_username, repo_url)
                 );
                 
                 CREATE TABLE IF NOT EXISTS repo_recaps (
