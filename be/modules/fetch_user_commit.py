@@ -4,7 +4,13 @@ from typing import List, Dict, Union
 import os
 import dotenv
 from icecream import ic
-from .. import SessionLocal
+try:
+    from .. import SessionLocal
+except ImportError:
+    import sys
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+    from be import SessionLocal
 from sqlalchemy import text
 
 

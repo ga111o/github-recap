@@ -1,8 +1,15 @@
 from datetime import datetime
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from .. import SessionLocal
-from . import validate_date_n_token
+try:
+    from . import validate_date_n_token
+    from .. import SessionLocal
+except ImportError:
+    import sys
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+    from be import SessionLocal
+    from be.modules import validate_date_n_token
 from typing import Optional 
 
 def get_total_commit_num(github_token: str, user: str, year: Optional[int], month: Optional[int]) -> int:

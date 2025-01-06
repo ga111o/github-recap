@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Header
 from typing import Optional
-from ..model import RequestBody
+from ..classes import RequestBody
 from ..modules import (
     check_repo_update_needed,
     get_user_commits,
