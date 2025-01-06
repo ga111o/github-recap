@@ -25,7 +25,13 @@ def validate_date_n_token(github_username: Optional[str], year: Optional[int], m
         raise HTTPException(status_code=422, detail="Invalid year or month")
 
     start_date = datetime(year, month, 1)
-    end_date = datetime(year, month + 1, 1) - timedelta(days=1)
+    
+    if month == 12:
+        next_month_date = datetime(year + 1, 1, 1)
+    else:
+        next_month_date = datetime(year, month + 1, 1)
+    
+    end_date = next_month_date - timedelta(days=1)
     end_date = end_date.replace(hour=23, minute=59, second=59)
 
     url = "https://api.github.com/user"
