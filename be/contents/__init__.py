@@ -1,1 +1,3 @@
 from .language_extensions import LANGUAGE_EXTENSIONS
+from .llm_prompt import agent1_code_reviewer_prompt, agent2_algorithm_explanation_prompt, agent3_theme_provider_prompt
+from .llm_answer_example import agent1_code_reviewer_example, agent2_algorithm_explanation_example, agent3_theme_provider_example
