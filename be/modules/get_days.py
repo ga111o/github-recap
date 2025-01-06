@@ -13,29 +13,19 @@ except ImportError:
 from datetime import datetime
 from sqlalchemy.sql import text
 from icecream import ic
+import calendar
 
-def get_total_days(db: Session, start_date: datetime) -> int:
+def get_total_days(year: int, month: int) -> int:
     """
-    Calculate total days in a month for a given start date
-    Returns:
-        int: Total number of days in the month
+    year, month를 받아서 해당 월의 총 일수를 반환
+    Returns: total_days(int) 해당 월의 총 일수
     """
-    total_days_query = db.execute(text("""
-        SELECT EXTRACT(DAY FROM 
-            (DATE_TRUNC('month', :start_date) + INTERVAL '1 month - 1 day')::date
-        )::integer
-    """), {
-        "start_date": start_date
-    })
-    return total_days_query.scalar()
+    return calendar.monthrange(year, month)[1]
 
-def get_active_days(github_username: str, github_token: str, year: int, month: int) -> Tuple[int, int]:
+def get_active_days(github_username: str, github_token: str, year: int, month: int) -> int:
     """
     github_username, github_token, year, month를 받아서 해당 기간동안 커밋된 날짜의 수를 반환
-    Returns:
-        tuple: (active_days, total_days)
-        - active_days: 실제로 커밋한 날짜 수
-        - total_days: 해당 월의 총 일수
+    Returns: active_days(int) 실제로 커밋한 날짜 수
     """
     db = SessionLocal()
     try:
@@ -43,9 +33,8 @@ def get_active_days(github_username: str, github_token: str, year: int, month: i
         ic(start_date, end_date)
 
         active_days = len(get_each_day_commit_count(github_username, github_token, year, month))
-        total_days = get_total_days(db, start_date)
         
-        return active_days, total_days
+        return active_days
     
     except Exception as e:
         raise Exception(f"get active days err: {str(e)}")
@@ -53,13 +42,10 @@ def get_active_days(github_username: str, github_token: str, year: int, month: i
     finally:
         db.close()
 
-def get_longest_streak(github_username: str, github_token: str, year: int, month: int) -> Tuple[int, int]:
+def get_longest_streak(github_username: str, github_token: str, year: int, month: int) -> int:
     """
     github_username, github_token, year, month를 받아서 해당 기간동안 가장 긴 연속 커밋 기간을 반환
-    Returns:
-        tuple: (longest_streak, total_days)
-        - longest_streak: 가장 긴 연속 커밋 기간
-        - total_days: 해당 월의 총 일수
+    Returns: longest_streak(int) 가장 긴 연속 커밋 기간
     """
 
     db = SessionLocal()
@@ -100,8 +86,7 @@ def get_longest_streak(github_username: str, github_token: str, year: int, month
             # 마지막 streak 확인
             longest_streak = max(longest_streak, current_streak)
 
-        total_days = get_total_days(db, start_date)
-        return longest_streak, total_days
+        return longest_streak
 
     except Exception as e:
         raise Exception(f"get longest streak err: {str(e)}")
@@ -109,13 +94,10 @@ def get_longest_streak(github_username: str, github_token: str, year: int, month
     finally:
         db.close()
 
-def get_longest_gap(github_username: str, github_token: str, year: int, month: int, day: int) -> Tuple[int, int]:
+def get_longest_gap(github_username: str, github_token: str, year: int, month: int, day: int) -> int:
     """
     github_username, github_token, year, month, day를 받아서 1일부터 현재까지 가장 길게 커밋하지 않은 연속된 날짜의 수를 반환
-    Returns:
-        tuple: (longest_gap, total_days)
-        - longest_gap: 가장 긴 연속으로 커밋을 하지 않은 기간
-        - total_days: 해당 월의 총 일수
+    Returns: longest_gap(int) 가장 긴 연속으로 커밋을 하지 않은 기간
     """
     db = SessionLocal()
     try:
@@ -165,8 +147,7 @@ def get_longest_gap(github_username: str, github_token: str, year: int, month: i
             # 커밋이 없는 경우, 시작부터 지정된 날짜까지의 간격으로
             longest_gap = (end_date.date() - start_date.date()).days - 1
 
-        total_days = get_total_days(db, start_date)
-        return longest_gap, total_days
+        return longest_gap
 
     except Exception as e:
         raise Exception(f"get longest gap err: {str(e)}")
@@ -230,3 +211,4 @@ if __name__ == "__main__":
     ic(get_longest_streak(github_username, token, 2025, 1))
     ic(get_longest_gap(github_username, token, 2025, 1, 6))
     ic(get_each_day_commit_count(github_username, token, 2025, 1))
+    ic(get_total_days(2025, 1))
