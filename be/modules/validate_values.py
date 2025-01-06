@@ -26,6 +26,7 @@ def validate_date_n_token(github_username: Optional[str], year: Optional[int], m
 
     start_date = datetime(year, month, 1)
     end_date = datetime(year, month + 1, 1) - timedelta(days=1)
+    end_date = end_date.replace(hour=23, minute=59, second=59)
 
     url = "https://api.github.com/user"
     headers = {"Authorization": f"token {token}"}
