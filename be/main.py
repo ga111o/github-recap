@@ -19,7 +19,8 @@ from .modules import (
     get_longest_streak,
     get_longest_gap,
     get_total_days,
-    get_each_day_commit_count
+    get_each_day_commit_count,
+    get_latest_commit_sha
 )
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -104,12 +105,16 @@ async def save_specific_repo_n_commits_to_db(
     start_date, end_date = validate_date_n_token(github_username, year, month, github_token)
     
     if check_repo_update_needed(github_username=github_username, repo_url=repository['html_url'], updated_at=repository['updated_at']):
-        commits = await get_user_commits(
+        # DB에서 최신 커밋 SHA 가져오기
+        latest_commit_sha = get_latest_commit_sha(github_username, repository['html_url']) 
+        
+        commits = get_user_commits(
             github_token, 
             github_username, 
             repository['name'], 
             start_date, 
-            end_date
+            end_date,
+            latest_commit_sha
         )
         
         if isinstance(commits, list):

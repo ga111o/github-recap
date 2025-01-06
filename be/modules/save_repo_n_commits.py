@@ -10,7 +10,7 @@ from typing import List, Dict, Union
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
-async def save_repo_and_commits(
+def save_repo_and_commits(
     github_username: str,
     repo_data: Dict,
     commits_data: List[Dict]
@@ -154,7 +154,7 @@ def check_repo_update_needed(github_username: str, repo_url: str, updated_at: Un
 
 if __name__ == "__main__":
     from get_user_repos import get_user_repos
-    from get_user_commits import get_user_commits
+    from be.modules.get_user_commit import get_user_commits
     import os
     import dotenv
     

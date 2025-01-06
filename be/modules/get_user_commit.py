@@ -4,41 +4,19 @@ from typing import List, Dict, Union
 import os
 import dotenv
 from icecream import ic
+from .. import SessionLocal
+from sqlalchemy import text
 
 
 dotenv.load_dotenv()
 
-def get_user_commits(token: str, user: str, repo_name: str, start_date: datetime, end_date: datetime) -> Union[List[Dict], tuple]:
+def get_user_commits(token: str, user: str, repo_name: str, start_date: datetime, end_date: datetime, latest_commit_sha: str = None) -> Union[List[Dict], tuple]:
     """
-    주어진 레포지토리 이름과 날짜 범위에 대한 커밋 정보, 변경된 파일들, 그리고 추가/삭제된 코드를 가져옴.
+    주어진 레포지토리 이름과 날짜 범위에 대한 커밋 정보를 가져옴.
+    latest_commit_sha가 제공되면, 해당 커밋 이후의 새로운 커밋만 가져옴.
 
-    params: 
-      - token: GitHub API 접근을 위한 토큰
-      - user: 유저 이름
-      - repo_name: 레포 이름
-      - start_date: 시작 날짜
-      - end_date: 종료 날짜
-
-    return: List[Dict] - 커밋 정보 리스트
-
-    [
-    {
-      'sha': commit['sha'],
-      'commit_message': commit['commit']['message'],
-      'author': commit['commit']['author']['name'],
-      'date': commit['commit']['author']['date'],
-      'files_changed': [
-          {
-              'filename': file['filename'],
-              'status': file['status'],
-              'additions': file['additions'],
-              'deletions': file['deletions'],
-              'changes': file['changes'],
-              'patch': file.get('patch', '')
-          } for file in commit_data['files']
-      ]
-  },
-    ]
+    params:
+      - latest_commit_sha: DB에 저장된 가장 최근 커밋의 SHA (None이면 모든 커밋을 가져옴)
     """
     print(f"        | repository: {repo_name}, get commits")
 
@@ -60,7 +38,17 @@ def get_user_commits(token: str, user: str, repo_name: str, start_date: datetime
         
         if response.status_code == 200:
             commits: List[Dict] = response.json()
-            all_commits.extend(commits)
+            
+            # 최신 커밋을 찾았거나 더 이상의 커밋이 없으면 중단
+            if latest_commit_sha:
+                for commit in commits:
+                    if commit['sha'] == latest_commit_sha:
+                        break
+                new_commits = [c for c in commits if c['sha'] != latest_commit_sha]
+                all_commits.extend(new_commits)
+                break
+            else:
+                all_commits.extend(commits)
             
             if 'next' in response.links:
                 url = response.links['next']['url']
@@ -98,6 +86,35 @@ def get_user_commits(token: str, user: str, repo_name: str, start_date: datetime
             return (commit_response.status_code, commit_response.text)
     
     return detailed_commits
+
+def get_latest_commit_sha(user: str, repo_url: str) -> str:
+    """
+    DB에서 특정 레포의 가장 최근 커밋 SHA를 가져옴
+
+    args:
+        user (str)
+        repo_url (str)
+
+    return:
+        str: 가장 최근 커밋의 SHA. 커밋이 없으면 None 반환
+    """
+    with SessionLocal() as session:
+        query = text("""
+            SELECT c.commit_hash
+            FROM commits c
+            JOIN repositories r ON c.repo_id = r.repo_id
+            WHERE r.github_username = :username 
+            AND r.repo_url = :repo_url
+            ORDER BY c.commit_date DESC
+            LIMIT 1
+        """)
+        
+        result = session.execute(query, {
+            "username": user,
+            "repo_url": repo_url
+        }).first()
+        
+        return result[0] if result else None
 
 if __name__ == "__main__":
     token: str = os.getenv("GITHUB_TOKEN")
