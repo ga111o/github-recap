@@ -40,7 +40,8 @@ def get_user_commits(token: str, user: str, repo_name: str, start_date: datetime
   },
     ]
     """
-    
+    print(f"        | repository: {repo_name}, get commits")
+
     url: str = f"https://api.github.com/repos/{user}/{repo_name}/commits"
     headers: Dict[str, str] = {
         'Authorization': f'token {token}',
@@ -68,9 +69,10 @@ def get_user_commits(token: str, user: str, repo_name: str, start_date: datetime
         else:
             return (response.status_code, response.text)
 
-
     detailed_commits = []
-    for commit in all_commits:
+    for i, commit in enumerate(all_commits, 1):
+        print(f"        | Fetching details for commit {i}/{len(all_commits)}: {commit['sha'][:7]}")
+            
         commit_url = f"https://api.github.com/repos/{user}/{repo_name}/commits/{commit['sha']}"
         commit_response = requests.get(commit_url, headers=headers)
         if commit_response.status_code == 200:

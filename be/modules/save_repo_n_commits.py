@@ -10,7 +10,7 @@ from typing import List, Dict, Union
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
-def save_repo_and_commits(
+async def save_repo_and_commits(
     github_username: str,
     repo_data: Dict,
     commits_data: List[Dict]
